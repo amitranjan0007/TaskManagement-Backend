@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  mysqlservice:
+    image: mysql:8.0.25
+    platform: linux/amd64
+    networks:
+      - springboot-db-net
+    ports:
+      - "3308:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=task_db
+    volumes:
+      - ./db:/var/lib/mysql
+    restart: always
+
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: amitranjan0007/spring-boot-mysql-app:latest
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      - MYSQL_HOST=mysqlservice
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root  # Dynamically passed as 'localhost' for local
+      - MYSQL_DATABASE=task_db
+    networks:
+      - springboot-db-net
+    depends_on:
+      - mysqlservice
+
+networks:
+  springboot-db-net:
+    driver: bridge
